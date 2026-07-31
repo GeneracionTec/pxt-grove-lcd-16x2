@@ -38,9 +38,30 @@ namespace gtGroveLcd16x2 {
 
     //% blockId=grove_lcd_16x2_move_cursor
     //% block="move cursor to row: $row  column: $column"
-    //% row.min=0 row.max=1 row.defl=0 row.shadow=range
-    //% column.min = 0 column.max=15 column.defl=0 column.shadow=range
+    //% row.min=0 row.max=1 row.defl=0
+    //% column.min=0 column.max=15 column.defl=0
     export function moveCursor(row: number, column: number): void {
+
+    }
+
+    //% blockId=grove_lcd_16x2_display_on_off
+    //% block="set display $state"
+    //% state.shadow="toggleOnOff"
+    export function displayOnOff(state: boolean): void {
+
+    }
+
+    //% blockId=grove_lcd_16x2_cursor_on_off
+    //% block="set cursor $state"
+    //% state.shadow="toggleOnOff"
+    export function cursorOnOff(state: boolean): void {
+
+    }
+
+    //% blockId=grove_lcd_16x2_cursor_blinking_on_off
+    //% block="set cursor blinking $state"
+    //% state.shadow="toggleOnOff"
+    export function cursorBlinkingOnOff(state: boolean): void {
 
     }
 
