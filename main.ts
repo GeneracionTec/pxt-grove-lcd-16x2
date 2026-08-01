@@ -6,8 +6,14 @@ Grove LCD 16x2 MakeCode extension for micro:Bit
  * Adds blocks for controlling every function of a Grove LCD 16x2
  */
 //% block="Grove LCD 16x2"
-namespace gtGroveLcd16x2 {
+namespace gTecGroveLcd16x2 {
     // Constants - instruction set
+    const ClearDisplay          = 0x01;
+    const ReturnHome            = 0x02;
+    const EntryModeSet          = 0x04;
+    const DisplayControl        = 0x08
+    const CursorDisplayShift    = 0x10;
+    const FunctionSet           = 0x20;
 
     // Extension blocks
 
