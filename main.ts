@@ -2,10 +2,9 @@
 Grove LCD 16x2 MakeCode extension for micro:Bit
 */
 
-// Values for dropdown
-enum CursorDirection {
-    right = 1,
-    left = 0
+enum ShiftElement {
+    display = 1,
+    cursor = 0
 }
 
 /**
@@ -100,9 +99,9 @@ namespace gTecGroveLcd16x2 {
     // Control cursor direction (increment/decrement), shift of entire display
 
     //% blockId=grove_lcd_16x2_entrymode_cursor_direction
-    //% block="cursor direction $state"
-    export function cursorDirection(state: CursorDirection): void {
-        entryModeSetValues = state == CursorDirection.right ? entryModeSetValues | EntryModeIncrement : entryModeSetValues & ~EntryModeIncrement;
+    //% block="cursor direction $dir"
+    export function cursorDirection(dir: Direction): void {
+        entryModeSetValues = dir == Direction.Right ? entryModeSetValues | EntryModeIncrement : entryModeSetValues & ~EntryModeIncrement;
         callEntryModeSet();
     }
 
@@ -142,10 +141,18 @@ namespace gTecGroveLcd16x2 {
     }
 
     // Cursor or Display shift functions
-    // Control cursor and display shift
+    // Control cursor or display shift, shift direction
+
+    //% blockId=grove_lcd_16x2_cursor_display_shift
+    //% block="shift $element to the $dir"
+    export function cursorDisplayShift(element: ShiftElement, dir: Direction): void {
+        shiftControlValues = dir == Direction.Right ? shiftControlValues | ShiftDirectionRL : shiftControlValues & ~ShiftDirectionRL;
+        shiftControlValues = element == ShiftElement.display? shiftControlValues | ShiftDisplayCursor : shiftControlValues & ~ShiftDisplayCursor;
+        callShiftControl();
+    }
 
     // Function Set functions
-    // Control interface data length (4/8 bit), number of display lines (1/2), font type (5x11/5x8)
+    // Control interface data length (4/8 bit - not implemented), number of display lines (1/2), font type (5x11/5x8)
 
     // Helper functions for sending data, commands, etc
     
@@ -174,6 +181,11 @@ namespace gTecGroveLcd16x2 {
 
     function callDisplayControl (): void {
         sendCommand(DisplayControl | displayControlValues);
+        basic.pause(10);
+    }
+
+    function callShiftControl (): void {
+        sendCommand(ShiftControl | shiftControlValues);
         basic.pause(10);
     }
 
