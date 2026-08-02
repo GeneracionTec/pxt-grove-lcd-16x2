@@ -46,19 +46,24 @@ namespace gTecGroveLcd16x2 {
     //% block="initialize LCD module"
     export function initialize(): void {
         basic.pause(20);
-        sendCommand(FunctionSet | functionSetValues);
-        basic.pause(10);
-        sendCommand(DisplayControl | displayControlValues);
-        basic.pause(10);
-        sendCommand(ClearDisplay);
-        basic.pause(10);
-        sendCommand(EntryModeSet | entryModeSetValues);
+        callFunctionSet();
+        callDisplayControl();
+        clear();
+        callEntryModeSet();
     }
 
     //% blockId=grove_lcd_16x2_clear
     //% block="clear screen"
     export function clear(): void {
+        sendCommand(ClearDisplay);
+        basic.pause(10);
+    }
 
+    //% blockId=grove_lcd_16x2_return_home
+    //% block="return cursor to home"
+    export function home(): void {
+        sendCommand(ReturnHome);
+        basic.pause(10);
     }
 
     //% blockId=grove_lcd_16x2_show_string
@@ -73,7 +78,8 @@ namespace gTecGroveLcd16x2 {
     //% blockId=grove_lcd_16x2_show_number
     //% block="show number $value"
     export function showNumber(value: number): void {
-
+        let message = value.toString();
+        showString(message);
     }
 
     //% blockId=grove_lcd_16x2_move_cursor
@@ -85,26 +91,28 @@ namespace gTecGroveLcd16x2 {
     }
 
     //% blockId=grove_lcd_16x2_display_on_off
-    //% block="set display $state"
+    //% block="turn display $state"
     //% state.shadow="toggleOnOff"
     export function displayOnOff(state: boolean): void {
-
+        displayControlValues = state ? displayControlValues | DisplayOn : displayControlValues & ~DisplayOn;
+        callDisplayControl();
     }
 
     //% blockId=grove_lcd_16x2_cursor_on_off
-    //% block="set cursor $state"
+    //% block="turn cursor $state"
     //% state.shadow="toggleOnOff"
     export function cursorOnOff(state: boolean): void {
-
+        displayControlValues = state ? displayControlValues | CursorOn : displayControlValues & ~CursorOn;
+        callDisplayControl();
     }
 
     //% blockId=grove_lcd_16x2_cursor_blinking_on_off
-    //% block="set cursor blinking $state"
+    //% block="turn cursor blinking $state"
     //% state.shadow="toggleOnOff"
     export function cursorBlinkingOnOff(state: boolean): void {
-
+        displayControlValues = state ? displayControlValues | CursorBlinkingOn : displayControlValues & ~CursorBlinkingOn;
+        callDisplayControl();
     }
-
 
     // Helper functions for sending data, commands, etc
     
@@ -122,6 +130,21 @@ namespace gTecGroveLcd16x2 {
         buffer[1] = data;
 
         pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
+    }
+
+    function callEntryModeSet (): void {
+        sendCommand(EntryModeSet | entryModeSetValues);
+        basic.pause(10);
+    }
+
+    function callDisplayControl (): void {
+        sendCommand(DisplayControl | displayControlValues);
+        basic.pause(10);
+    }
+
+    function callFunctionSet (): void {
+        sendCommand(FunctionSet | functionSetValues);
+        basic.pause(10);
     }
 
 }
