@@ -8,19 +8,51 @@ Grove LCD 16x2 MakeCode extension for micro:Bit
 //% block="Grove LCD 16x2"
 namespace gTecGroveLcd16x2 {
     // Constants - instruction set
-    const ClearDisplay          = 0x01;
-    const ReturnHome            = 0x02;
-    const EntryModeSet          = 0x04;
-    const DisplayControl        = 0x08
-    const CursorDisplayShift    = 0x10;
-    const FunctionSet           = 0x20;
+    const ClearDisplay          = 0x01; // Command
+    const ReturnHome            = 0x02; // Command
+
+    const EntryModeSet          = 0x04; // Command - Use with following data
+    const EntryModeShift        = 0x01; // 0x01=Shift entire display - 0x00=No shift
+    const EntryModeIncrement    = 0x02; // 0x02=Increment cursor direction - 0x00=Decrement
+
+    const DisplayControl        = 0x08; // Command - Use with following data
+    const CursorBlinkingOn      = 0x01; // 0x01=Cursor blink on  - 0x00=Cursor blink off
+    const CursorOn              = 0x02; // 0x02=Cursor on - 0x00=Cursor off
+    const DisplayOn             = 0x04; // 0x04=Display on - 0x00=Display off
+
+    const ShiftControl          = 0x10; // Command - Use with following data
+    const ShiftDirectionRL      = 0x04; // 0x04=Shift right - 0x00=Shift left
+    const ShiftDisplayCursor    = 0x08; // 0x08=Shift display - 0x00=Shift cursor
+
+    const FunctionSet           = 0x20; // Command - Use with following data
+    const FontStyle5x11         = 0x04; // 0x04=5x11 - 0x00=5x7
+    const Display2Rows          = 0x08; // 0x08=2 rows - 0x00=1 rows
+    const DataLength8Bits       = 0x10; // 0x10=8 bits - 0x00=4 bits
+
+    const SetCGRAMAddress       = 0x40;
+    const SetDDRAMAddress       = 0x80;
+
+    // Initial values
+    let lcdI2cAddress           = 0x3e;
+
+    let entryModeSetValues      = EntryModeIncrement & ~EntryModeShift;
+    let displayControlValues    = DisplayOn & ~CursorOn & ~CursorBlinkingOn;
+    let shiftControlValues      = ~ShiftDisplayCursor & ShiftDirectionRL;
+    let functionSetValues       = DataLength8Bits | Display2Rows | FontStyle5x11;
 
     // Extension blocks
 
     //% blockId=grove_lcd_16x2_initialize
     //% block="initialize LCD module"
-    export function initialize(): void { 
-
+    export function initialize(): void {
+        basic.pause(20);
+        sendCommand(FunctionSet | functionSetValues);
+        basic.pause(10);
+        sendCommand(DisplayControl | displayControlValues);
+        basic.pause(10);
+        sendCommand(ClearDisplay);
+        basic.pause(10);
+        sendCommand(EntryModeSet | entryModeSetValues);
     }
 
     //% blockId=grove_lcd_16x2_clear
@@ -33,7 +65,9 @@ namespace gTecGroveLcd16x2 {
     //% block="show string $message"
     //% message.defl="Hello world!"
     export function showString(message: string): void {
-
+        for (let i = 0; i < message.length; i++) {
+            sendData(message.charCodeAt(i));
+        }
     }
 
     //% blockId=grove_lcd_16x2_show_number
@@ -72,7 +106,23 @@ namespace gTecGroveLcd16x2 {
     }
 
 
-    // Helper functions for sending commands, splitting bytes, etc
+    // Helper functions for sending data, commands, etc
+    
+    function sendData (data: number): void {
+        let buffer = pins.createBuffer(2);
+        buffer[0] = SetCGRAMAddress;
+        buffer[1] = data;
+
+        pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
+    }
+
+    function sendCommand (data: number) : void {
+        let buffer = pins.createBuffer(2);
+        buffer[0] = SetDDRAMAddress;
+        buffer[1] = data;
+
+        pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
+    }
 
 }
 
