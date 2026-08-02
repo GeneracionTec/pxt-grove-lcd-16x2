@@ -11,7 +11,7 @@ enum CursorDirection {
 /**
  * Adds blocks for controlling every function of a Grove LCD 16x2
  */
-//% block="Grove LCD 16x2"
+//% color=#0132c8 block="Grove LCD 16x2"
 namespace gTecGroveLcd16x2 {
     // Constants - instruction set
     const ClearDisplay          = 0x01; // Command
@@ -22,7 +22,7 @@ namespace gTecGroveLcd16x2 {
     const EntryModeIncrement    = 0x02; // 0x02=Increment cursor direction - 0x00=Decrement
 
     const DisplayControl        = 0x08; // Command - Use with following data
-    const CursorBlinkingOn      = 0x01; // 0x01=Cursor blink on  - 0x00=Cursor blink off
+    const CursorBlinkingOn      = 0x01; // 0x01=Cursor blink on - 0x00=Cursor blink off
     const CursorOn              = 0x02; // 0x02=Cursor on - 0x00=Cursor off
     const DisplayOn             = 0x04; // 0x04=Display on - 0x00=Display off
 
@@ -96,6 +96,9 @@ namespace gTecGroveLcd16x2 {
         basic.pause(10);
     }
 
+    // Entry Mode Set functions
+    // Control cursor direction (increment/decrement), shift of entire display
+
     //% blockId=grove_lcd_16x2_entrymode_cursor_direction
     //% block="cursor direction $state"
     export function cursorDirection(state: CursorDirection): void {
@@ -110,6 +113,9 @@ namespace gTecGroveLcd16x2 {
         entryModeSetValues = state ? entryModeSetValues | EntryModeShift : entryModeSetValues & ~EntryModeShift;
         callEntryModeSet();
     }
+
+    // Display Control functions
+    // Control display on/off, cursor on/off, cursor blinking on/off
 
     //% blockId=grove_lcd_16x2_display_on_off
     //% block="turn display $state"
@@ -135,8 +141,15 @@ namespace gTecGroveLcd16x2 {
         callDisplayControl();
     }
 
+    // Cursor or Display shift functions
+    // Control cursor and display shift
+
+    // Function Set functions
+    // Control interface data length (4/8 bit), number of display lines (1/2), font type (5x11/5x8)
+
     // Helper functions for sending data, commands, etc
     
+    // Set CGRAM Address - used for sending data
     function sendData (data: number): void {
         let buffer = pins.createBuffer(2);
         buffer[0] = SetCGRAMAddress;
@@ -145,6 +158,7 @@ namespace gTecGroveLcd16x2 {
         pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
     }
 
+    // Set DDRAM Address - used for sending commands
     function sendCommand (data: number) : void {
         let buffer = pins.createBuffer(2);
         buffer[0] = SetDDRAMAddress;
