@@ -2,6 +2,12 @@
 Grove LCD 16x2 MakeCode extension for micro:Bit
 */
 
+// Values for dropdown
+enum CursorDirection {
+    right = 1,
+    left = 0
+}
+
 /**
  * Adds blocks for controlling every function of a Grove LCD 16x2
  */
@@ -52,20 +58,6 @@ namespace gTecGroveLcd16x2 {
         callEntryModeSet();
     }
 
-    //% blockId=grove_lcd_16x2_clear
-    //% block="clear screen"
-    export function clear(): void {
-        sendCommand(ClearDisplay);
-        basic.pause(10);
-    }
-
-    //% blockId=grove_lcd_16x2_return_home
-    //% block="return cursor to home"
-    export function home(): void {
-        sendCommand(ReturnHome);
-        basic.pause(10);
-    }
-
     //% blockId=grove_lcd_16x2_show_string
     //% block="show string $message"
     //% message.defl="Hello world!"
@@ -88,6 +80,35 @@ namespace gTecGroveLcd16x2 {
     //% column.min=0 column.max=15 column.defl=0
     export function moveCursor(row: number, column: number): void {
 
+    }
+
+    //% blockId=grove_lcd_16x2_clear
+    //% block="clear screen"
+    export function clear(): void {
+        sendCommand(ClearDisplay);
+        basic.pause(10);
+    }
+
+    //% blockId=grove_lcd_16x2_return_home
+    //% block="return cursor to home"
+    export function home(): void {
+        sendCommand(ReturnHome);
+        basic.pause(10);
+    }
+
+    //% blockId=grove_lcd_16x2_entrymode_cursor_direction
+    //% block="cursor direction $state"
+    export function cursorDirection(state: CursorDirection): void {
+        entryModeSetValues = state == CursorDirection.right ? entryModeSetValues | EntryModeIncrement : entryModeSetValues & ~EntryModeIncrement;
+        callEntryModeSet();
+    }
+
+    //% blockId=grove_lcd_16x2_entrymode_shift_on_off
+    //% block="turn display shifting $state"
+    //% state.shadow="toggleOnOff"
+    export function displayShiftOnOff(state: boolean): void {
+        entryModeSetValues = state ? entryModeSetValues | EntryModeShift : entryModeSetValues & ~EntryModeShift;
+        callEntryModeSet();
     }
 
     //% blockId=grove_lcd_16x2_display_on_off
