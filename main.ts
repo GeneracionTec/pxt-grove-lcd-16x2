@@ -194,5 +194,30 @@ namespace gTecGroveLcd16x2 {
         basic.pause(10);
     }
 
+    // Testing area
+
+    /**
+    */
+    //& blockId="set_slot"
+    //% block="Create character in slot $slot| $pattern"
+    //% pattern.shadow="create_character"
+    //% inlineInputMode=external
+    export function foo(slot: number, pattern: string): void {
+
+    }
+
+    /**
+    */
+    //% blockId="create_character"
+    //% block="character data"
+    //% imageLiteral=1
+    //% imageLiteralColumns=5
+    //% imageLiteralRows=8
+    //% shim=images::createImage
+
+    export function bar(img: string): string {
+        return img;
+    }
+
 }
 
