@@ -11,6 +11,7 @@ enum ShiftElement {
  * Adds blocks for controlling every function of a Grove LCD 16x2
  */
 //% color=#0132c8 block="Grove LCD 16x2"
+//% groups=['Basic blocks', 'Advanced functionality', 'others']
 namespace gTecGroveLcd16x2 {
     // Constants - instruction set
     const ClearDisplay          = 0x01; // Command
@@ -49,6 +50,9 @@ namespace gTecGroveLcd16x2 {
 
     //% blockId=grove_lcd_16x2_initialize
     //% block="initialize LCD module"
+    //% group="Basic blocks"
+    //% weight=90
+    //% blockGap=4
     export function initialize(): void {
         basic.pause(20);
         callFunctionSet();
@@ -60,6 +64,9 @@ namespace gTecGroveLcd16x2 {
     //% blockId=grove_lcd_16x2_show_string
     //% block="show string $message"
     //% message.defl="Hello world!"
+    //% group="Basic blocks"
+    //% weight=80
+    //% blockGap=4
     export function showString(message: string): void {
         for (let i = 0; i < message.length; i++) {
             sendData(message.charCodeAt(i));
@@ -68,6 +75,9 @@ namespace gTecGroveLcd16x2 {
 
     //% blockId=grove_lcd_16x2_show_number
     //% block="show number $value"
+    //% group="Basic blocks"
+    //% weight=70
+    //% blockGap=4
     export function showNumber(value: number): void {
         let message = value.toString();
         showString(message);
@@ -77,12 +87,18 @@ namespace gTecGroveLcd16x2 {
     //% block="move cursor to row: $row  column: $column"
     //% row.min=0 row.max=1 row.defl=0
     //% column.min=0 column.max=15 column.defl=0
+    //% group="Basic blocks"
+    //% weight=60
+    //% blockGap=4
     export function moveCursor(row: number, column: number): void {
 
     }
 
     //% blockId=grove_lcd_16x2_clear
     //% block="clear screen"
+    //% group="Basic blocks"
+    //% weight=50
+    //% blockGap=4
     export function clear(): void {
         sendCommand(ClearDisplay);
         basic.pause(10);
@@ -90,6 +106,9 @@ namespace gTecGroveLcd16x2 {
 
     //% blockId=grove_lcd_16x2_return_home
     //% block="return cursor to home"
+    //% group="Basic blocks"
+    //% weight=40
+    //% blockGap=8
     export function home(): void {
         sendCommand(ReturnHome);
         basic.pause(10);
@@ -100,6 +119,9 @@ namespace gTecGroveLcd16x2 {
 
     //% blockId=grove_lcd_16x2_entrymode_cursor_direction
     //% block="cursor direction $dir"
+    //% group="Advanced functionality"
+    //% weight=90
+    //% blockGap=4
     export function cursorDirection(dir: Direction): void {
         entryModeSetValues = dir == Direction.Right ? entryModeSetValues | EntryModeIncrement : entryModeSetValues & ~EntryModeIncrement;
         callEntryModeSet();
@@ -108,6 +130,9 @@ namespace gTecGroveLcd16x2 {
     //% blockId=grove_lcd_16x2_entrymode_shift_on_off
     //% block="turn display shifting $state"
     //% state.shadow="toggleOnOff"
+    //% group="Advanced functionality"
+    //% weight=80
+    //% blockGap=4
     export function displayShiftOnOff(state: boolean): void {
         entryModeSetValues = state ? entryModeSetValues | EntryModeShift : entryModeSetValues & ~EntryModeShift;
         callEntryModeSet();
@@ -119,6 +144,9 @@ namespace gTecGroveLcd16x2 {
     //% blockId=grove_lcd_16x2_display_on_off
     //% block="turn display $state"
     //% state.shadow="toggleOnOff"
+    //% group="Advanced functionality"
+    //% weight=70
+    //% blockGap=4
     export function displayOnOff(state: boolean): void {
         displayControlValues = state ? displayControlValues | DisplayOn : displayControlValues & ~DisplayOn;
         callDisplayControl();
@@ -127,6 +155,9 @@ namespace gTecGroveLcd16x2 {
     //% blockId=grove_lcd_16x2_cursor_on_off
     //% block="turn cursor $state"
     //% state.shadow="toggleOnOff"
+    //% group="Advanced functionality"
+    //% weight=60
+    //% blockGap=4
     export function cursorOnOff(state: boolean): void {
         displayControlValues = state ? displayControlValues | CursorOn : displayControlValues & ~CursorOn;
         callDisplayControl();
@@ -135,6 +166,9 @@ namespace gTecGroveLcd16x2 {
     //% blockId=grove_lcd_16x2_cursor_blinking_on_off
     //% block="turn cursor blinking $state"
     //% state.shadow="toggleOnOff"
+    //% group="Advanced functionality"
+    //% weight=50
+    //% blockGap=4
     export function cursorBlinkingOnOff(state: boolean): void {
         displayControlValues = state ? displayControlValues | CursorBlinkingOn : displayControlValues & ~CursorBlinkingOn;
         callDisplayControl();
@@ -145,6 +179,9 @@ namespace gTecGroveLcd16x2 {
 
     //% blockId=grove_lcd_16x2_cursor_display_shift
     //% block="shift $element to the $dir"
+    //% group="Advanced functionality"
+    //% weight=40
+    //% blockGap=4
     export function cursorDisplayShift(element: ShiftElement, dir: Direction): void {
         shiftControlValues = dir == Direction.Right ? shiftControlValues | ShiftDirectionRL : shiftControlValues & ~ShiftDirectionRL;
         shiftControlValues = element == ShiftElement.display? shiftControlValues | ShiftDisplayCursor : shiftControlValues & ~ShiftDisplayCursor;
