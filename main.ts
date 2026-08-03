@@ -12,6 +12,7 @@ enum ShiftElement {
  */
 //% color=#0132c8 block="Grove LCD 16x2"
 //% groups=['Basic blocks', 'Advanced functionality', 'others']
+//% weight=55
 namespace gTecGroveLcd16x2 {
     // Constants - instruction set
     const ClearDisplay          = 0x01; // Command
