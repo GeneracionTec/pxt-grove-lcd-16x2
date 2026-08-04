@@ -240,8 +240,22 @@ namespace gTecGroveLcd16x2 {
     //% block="Create character in slot $slot| $pattern"
     //% pattern.shadow="create_character"
     //% inlineInputMode=external
-    export function foo(slot: number, pattern: string): void {
+    export function foo(slot: number, pattern: Image): void {
+        console.log("Desde la función:");
 
+        for (let y=0; y<8; y++) {
+            let r= "";
+            for (let x=0; x<5; x++) {
+                if (pattern.pixel(x,y)) {
+                    r += "1";
+                }
+                else {
+                    r += "0";
+                }
+            }
+            console.log(r);
+        } 
+        
     }
 
     /**
@@ -252,10 +266,11 @@ namespace gTecGroveLcd16x2 {
     //% imageLiteralColumns=5
     //% imageLiteralRows=8
     //% shim=images::createImage
-
-    export function bar(img: string): string {
-        return img;
+    export function bar(img: string): Image {
+        return <Image><any>img;
     }
 
 }
+
+
 
