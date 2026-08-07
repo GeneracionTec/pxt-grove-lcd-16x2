@@ -71,6 +71,7 @@ namespace gTecGroveLcd16x2 {
     export function showString(message: string): void {
         for (let i = 0; i < message.length; i++) {
             sendData(message.charCodeAt(i));
+            basic.pause(1);
         }
     }
 
@@ -80,8 +81,7 @@ namespace gTecGroveLcd16x2 {
     //% weight=70
     //% blockGap=4
     export function showNumber(value: number): void {
-        let message = value.toString();
-        showString(message);
+        showString(value.toString());
     }
 
     //% blockId=grove_lcd_16x2_move_cursor
@@ -102,7 +102,7 @@ namespace gTecGroveLcd16x2 {
     //% blockGap=4
     export function clear(): void {
         sendCommand(ClearDisplay);
-        basic.pause(10);
+        basic.pause(2);
     }
 
     //% blockId=grove_lcd_16x2_return_home
@@ -112,7 +112,7 @@ namespace gTecGroveLcd16x2 {
     //% blockGap=8
     export function home(): void {
         sendCommand(ReturnHome);
-        basic.pause(10);
+        basic.pause(2);
     }
 
     // Entry Mode Set functions
@@ -212,27 +212,34 @@ namespace gTecGroveLcd16x2 {
         pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
     }
 
+    // Functions for configuring LCD features
     function callEntryModeSet (): void {
         sendCommand(EntryModeSet | entryModeSetValues);
-        basic.pause(10);
+        basic.pause(1);
     }
 
     function callDisplayControl (): void {
         sendCommand(DisplayControl | displayControlValues);
-        basic.pause(10);
+        basic.pause(1);
     }
 
     function callShiftControl (): void {
         sendCommand(ShiftControl | shiftControlValues);
-        basic.pause(10);
+        basic.pause(1);
     }
 
     function callFunctionSet (): void {
         sendCommand(FunctionSet | functionSetValues);
-        basic.pause(10);
+        basic.pause(1);
     }
 
     // Testing area
+
+    //% blockId=grove_lcd_16x2_show_custom_character
+    //% block="show custom character $slot"
+    export function showCustomCharacter(slot: number): void {
+            showString(String.fromCharCode(slot));
+    }
 
     /**
     */
@@ -241,21 +248,28 @@ namespace gTecGroveLcd16x2 {
     //% pattern.shadow="create_character"
     //% inlineInputMode=external
     export function foo(slot: number, pattern: Image): void {
-        console.log("Desde la función:");
+        let charBytes: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
 
+        // Build the bytes for each row, based on pixels being on or off
         for (let y=0; y<8; y++) {
-            let r= "";
+            let byte = 0;
             for (let x=0; x<5; x++) {
-                if (pattern.pixel(x,y)) {
-                    r += "1";
-                }
-                else {
-                    r += "0";
-                }
+                byte = (byte << 1) | (pattern.pixel(x,y)? 1 : 0);
             }
-            console.log(r);
-        } 
-        
+            charBytes[y] = byte;
+        }
+
+        // Send command and data bytes for saving the custom character on the appropriate slot
+        sendCommand(0x40 | (slot << 3));
+        basic.pause(2);
+
+        for (let i=0; i<8; i++) {
+            sendData(charBytes[i]);
+            basic.pause(2);
+        }
+
+        // Send a "Home" command to get out of custom characters address context
+        home();
     }
 
     /**
@@ -271,6 +285,3 @@ namespace gTecGroveLcd16x2 {
     }
 
 }
-
-
-
