@@ -2,7 +2,7 @@
 Grove LCD 16x2 MakeCode extension for micro:Bit
 */
 
-enum ShiftElement {
+enum GTecShiftElement {
     display = 1,
     cursor = 0
 }
@@ -85,14 +85,21 @@ namespace gTecGroveLcd16x2 {
     }
 
     //% blockId=grove_lcd_16x2_move_cursor
-    //% block="move cursor to row: $row  column: $column"
-    //% row.min=0 row.max=1 row.defl=0
+    //% block="move cursor to column: $column row: $row"
     //% column.min=0 column.max=15 column.defl=0
+    //% row.min=0 row.max=1 row.defl=0
     //% group="Basic blocks"
     //% weight=60
     //% blockGap=4
-    export function moveCursor(row: number, column: number): void {
+    export function moveCursor(column: number, row: number): void {
+        let data = 0x00 | column;
 
+        if (row > 0) {
+            data = 0x40 | column;
+        }
+
+        sendCommand(SetDDRAMAddress | data);
+        basic.pause(1);
     }
 
     //% blockId=grove_lcd_16x2_clear
@@ -183,9 +190,9 @@ namespace gTecGroveLcd16x2 {
     //% group="Advanced functionality"
     //% weight=40
     //% blockGap=4
-    export function cursorDisplayShift(element: ShiftElement, dir: Direction): void {
+    export function cursorDisplayShift(element: GTecShiftElement, dir: Direction): void {
         shiftControlValues = dir == Direction.Right ? shiftControlValues | ShiftDirectionRL : shiftControlValues & ~ShiftDirectionRL;
-        shiftControlValues = element == ShiftElement.display? shiftControlValues | ShiftDisplayCursor : shiftControlValues & ~ShiftDisplayCursor;
+        shiftControlValues = element == GTecShiftElement.display? shiftControlValues | ShiftDisplayCursor : shiftControlValues & ~ShiftDisplayCursor;
         callShiftControl();
     }
 
@@ -194,19 +201,19 @@ namespace gTecGroveLcd16x2 {
 
     // Helper functions for sending data, commands, etc
     
-    // Set CGRAM Address - used for sending data
+    // Send a data byte
     function sendData (data: number): void {
         let buffer = pins.createBuffer(2);
-        buffer[0] = SetCGRAMAddress;
+        buffer[0] = 0x40;
         buffer[1] = data;
 
         pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
     }
 
-    // Set DDRAM Address - used for sending commands
+    // Send a command byte
     function sendCommand (data: number) : void {
         let buffer = pins.createBuffer(2);
-        buffer[0] = SetDDRAMAddress;
+        buffer[0] = 0x80;
         buffer[1] = data;
 
         pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
@@ -260,15 +267,15 @@ namespace gTecGroveLcd16x2 {
         }
 
         // Send command and data bytes for saving the custom character on the appropriate slot
-        sendCommand(0x40 | (slot << 3));
-        basic.pause(2);
+        sendCommand(SetCGRAMAddress | (slot << 3));
+        basic.pause(1);
 
         for (let i=0; i<8; i++) {
             sendData(charBytes[i]);
             basic.pause(2);
         }
 
-        // Send a "Home" command to get out of custom characters address context
+        // Send a "Home" command to get out of CGRAM address context and back to DDRAM with a known address
         home();
     }
 
