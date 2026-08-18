@@ -2,7 +2,7 @@
 Grove LCD 16x2 MakeCode extension for micro:Bit
 */
 
-enum GTecShiftElement {
+enum GTecGroveLcd16x2ShiftElement {
     display = 1,
     cursor = 0
 }
@@ -10,8 +10,8 @@ enum GTecShiftElement {
 /**
  * Adds blocks for controlling every function of a Grove LCD 16x2
  */
-//% color=#0132c8 block="Grove LCD 16x2"
-//% groups=['Basic blocks', 'Advanced functionality', 'others']
+//% color=#0132c8 icon="\uf0ad" block="Grove LCD 16x2"
+//% groups=['Basic blocks', 'Custom characters', 'Advanced functionality', 'others']
 //% weight=55
 namespace gTecGroveLcd16x2 {
     // Constants - instruction set
@@ -48,6 +48,7 @@ namespace gTecGroveLcd16x2 {
     let functionSetValues       = DataLength8Bits | Display2Rows | FontStyle5x11;
 
     // Extension blocks
+    // Basic blocks
 
     //% blockId=grove_lcd_16x2_initialize
     //% block="initialize LCD module"
@@ -122,6 +123,68 @@ namespace gTecGroveLcd16x2 {
         basic.pause(2);
     }
 
+    // Custom character blocks
+
+    //% blockId=grove_lcd_16x2_show_custom_character
+    //% block="show custom character $slot"
+    //% group="Custom characters"
+    //% weight=90
+    //% blockGap=8
+    export function showCustomCharacter(slot: number): void {
+        showString(String.fromCharCode(slot));
+    }
+
+    /**
+    */
+    //& blockId="set_slot"
+    //% block="Create character in slot $slot| $pattern"
+    //% pattern.shadow="create_character"
+    //% inlineInputMode=external
+    //% group="Custom characters"
+    //% weight=80
+    //% blockGap=8
+    export function foo(slot: number, pattern: Image): void {
+        let charBytes: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
+
+        // Build the bytes for each row, based on pixels being on or off
+        for (let y = 0; y < 8; y++) {
+            let byte = 0;
+            for (let x = 0; x < 5; x++) {
+                byte = (byte << 1) | (pattern.pixel(x, y) ? 1 : 0);
+            }
+            charBytes[y] = byte;
+        }
+
+        // Send command and data bytes for saving the custom character on the appropriate slot
+        sendCommand(SetCGRAMAddress | (slot << 3));
+        basic.pause(1);
+
+        for (let i = 0; i < 8; i++) {
+            sendData(charBytes[i]);
+            basic.pause(2);
+        }
+
+        // Send a "Home" command to get out of CGRAM address context and back to DDRAM with a known address
+        home();
+    }
+
+    /**
+    */
+    //% blockId="create_character"
+    //% block="character data"
+    //% imageLiteral=1
+    //% imageLiteralColumns=5
+    //% imageLiteralRows=8
+    //% shim=images::createImage
+    //% group="Custom characters"
+    //% weight=70
+    //% blockGap=8
+    export function bar(img: string): Image {
+        return <Image><any>img;
+    }
+
+    // Advanced functionality blocks
+
     // Entry Mode Set functions
     // Control cursor direction (increment/decrement), shift of entire display
 
@@ -190,35 +253,19 @@ namespace gTecGroveLcd16x2 {
     //% group="Advanced functionality"
     //% weight=40
     //% blockGap=4
-    export function cursorDisplayShift(element: GTecShiftElement, dir: Direction): void {
+    export function cursorDisplayShift(element: GTecGroveLcd16x2ShiftElement, dir: Direction): void {
         shiftControlValues = dir == Direction.Right ? shiftControlValues | ShiftDirectionRL : shiftControlValues & ~ShiftDirectionRL;
-        shiftControlValues = element == GTecShiftElement.display? shiftControlValues | ShiftDisplayCursor : shiftControlValues & ~ShiftDisplayCursor;
+        shiftControlValues = element == GTecGroveLcd16x2ShiftElement.display? shiftControlValues | ShiftDisplayCursor : shiftControlValues & ~ShiftDisplayCursor;
         callShiftControl();
     }
 
     // Function Set functions
     // Control interface data length (4/8 bit - not implemented), number of display lines (1/2), font type (5x11/5x8)
 
+
+
     // Helper functions for sending data, commands, etc
     
-    // Send a data byte
-    function sendData (data: number): void {
-        let buffer = pins.createBuffer(2);
-        buffer[0] = 0x40;
-        buffer[1] = data;
-
-        pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
-    }
-
-    // Send a command byte
-    function sendCommand (data: number) : void {
-        let buffer = pins.createBuffer(2);
-        buffer[0] = 0x80;
-        buffer[1] = data;
-
-        pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
-    }
-
     // Functions for configuring LCD features
     function callEntryModeSet (): void {
         sendCommand(EntryModeSet | entryModeSetValues);
@@ -240,55 +287,23 @@ namespace gTecGroveLcd16x2 {
         basic.pause(1);
     }
 
+    // Send a data byte
+    function sendData(data: number): void {
+        let buffer = pins.createBuffer(2);
+        buffer[0] = 0x40;
+        buffer[1] = data;
+
+        pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
+    }
+
+    // Send a command byte
+    function sendCommand(data: number): void {
+        let buffer = pins.createBuffer(2);
+        buffer[0] = 0x80;
+        buffer[1] = data;
+
+        pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
+    }
+
     // Testing area
-
-    //% blockId=grove_lcd_16x2_show_custom_character
-    //% block="show custom character $slot"
-    export function showCustomCharacter(slot: number): void {
-            showString(String.fromCharCode(slot));
-    }
-
-    /**
-    */
-    //& blockId="set_slot"
-    //% block="Create character in slot $slot| $pattern"
-    //% pattern.shadow="create_character"
-    //% inlineInputMode=external
-    export function foo(slot: number, pattern: Image): void {
-        let charBytes: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
-
-        // Build the bytes for each row, based on pixels being on or off
-        for (let y=0; y<8; y++) {
-            let byte = 0;
-            for (let x=0; x<5; x++) {
-                byte = (byte << 1) | (pattern.pixel(x,y)? 1 : 0);
-            }
-            charBytes[y] = byte;
-        }
-
-        // Send command and data bytes for saving the custom character on the appropriate slot
-        sendCommand(SetCGRAMAddress | (slot << 3));
-        basic.pause(1);
-
-        for (let i=0; i<8; i++) {
-            sendData(charBytes[i]);
-            basic.pause(2);
-        }
-
-        // Send a "Home" command to get out of CGRAM address context and back to DDRAM with a known address
-        home();
-    }
-
-    /**
-    */
-    //% blockId="create_character"
-    //% block="character data"
-    //% imageLiteral=1
-    //% imageLiteralColumns=5
-    //% imageLiteralRows=8
-    //% shim=images::createImage
-    export function bar(img: string): Image {
-        return <Image><any>img;
-    }
-
 }
