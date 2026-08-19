@@ -51,11 +51,14 @@ namespace gTecGroveLcd16x2 {
     // Basic blocks
 
     //% blockId=grove_lcd_16x2_initialize
-    //% block="initialize LCD module"
+    //% block="initialize LCD module || with address: $address"
+    //% expandableArgumentMode="toggle"
+    //% address.defl=0x3e
     //% group="Basic blocks"
     //% weight=90
     //% blockGap=4
-    export function initialize(): void {
+    export function initialize(address?: number): void {
+        lcdI2cAddress = address;
         basic.pause(20);
         callFunctionSet();
         callDisplayControl();
