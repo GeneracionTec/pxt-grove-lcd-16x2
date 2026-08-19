@@ -7,6 +7,13 @@ enum GTecGroveLcd16x2ShiftElement {
     cursor = 0
 }
 
+enum GTecGroveLcd16x2FontSize {
+    //% block="5x8"
+    fivebyeight,
+    //% block="5x11"
+    fivebyeleven
+}
+
 /**
  * Adds blocks for controlling every function of a Grove LCD 16x2
  */
@@ -32,7 +39,7 @@ namespace gTecGroveLcd16x2 {
     const ShiftDisplayCursor    = 0x08; // 0x08=Shift display - 0x00=Shift cursor
 
     const FunctionSet           = 0x20; // Command - Use with following data
-    const FontStyle5x11         = 0x04; // 0x04=5x11 - 0x00=5x7
+    const FontSize5x11          = 0x04; // 0x04=5x11 - 0x00=5x8
     const Display2Rows          = 0x08; // 0x08=2 rows - 0x00=1 rows
     const DataLength8Bits       = 0x10; // 0x10=8 bits - 0x00=4 bits
 
@@ -45,7 +52,7 @@ namespace gTecGroveLcd16x2 {
     let entryModeSetValues      = EntryModeIncrement & ~EntryModeShift;
     let displayControlValues    = DisplayOn & ~CursorOn & ~CursorBlinkingOn;
     let shiftControlValues      = ~ShiftDisplayCursor & ShiftDirectionRL;
-    let functionSetValues       = DataLength8Bits | Display2Rows | FontStyle5x11;
+    let functionSetValues       = DataLength8Bits | Display2Rows & ~FontSize5x11;
 
     // Extension blocks
     // Basic blocks
@@ -285,9 +292,28 @@ namespace gTecGroveLcd16x2 {
     }
 
     // Function Set functions
-    // Control interface data length (4/8 bit - not implemented), number of display lines (1/2), font type (5x11/5x8)
+    // Control interface data length (4/8 bit - not implemented), number of display lines (1/2), font size (5x11/5x8)
+    
+    //% blockId=grove_lcd_16x2_display_lines
+    //% block="number of display lines: $value"
+    //% value.min=1 value.max=2 value.defl=2
+    //% group="Advanced functionality"
+    //% weight=30
+    //% blockGap=4
+    export function displayLines(value: number): void {
+        functionSetValues = value == 2 ? functionSetValues | Display2Rows : functionSetValues & ~Display2Rows;
+        callFunctionSet();
+    }
 
-
+    //% blockId=grove_lcd_16x2_cursor_font_size
+    //% block="font size: $size"
+    //% group="Advanced functionality"
+    //% weight=20
+    //% blockGap=4
+    export function fontSize(size: GTecGroveLcd16x2FontSize): void {
+        functionSetValues = size == GTecGroveLcd16x2FontSize.fivebyeleven ? functionSetValues | FontSize5x11 : functionSetValues & ~FontSize5x11;
+        callFunctionSet();
+    }
 
     // Helper functions for sending data, commands, etc
     
@@ -404,5 +430,4 @@ namespace gTecGroveLcd16x2 {
         return result;
     }
 
-    // Testing area
 }
