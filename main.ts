@@ -139,10 +139,20 @@ namespace gTecGroveLcd16x2 {
     //% group="Custom characters"
     //% slot.min=0 slot.max=255 slot.defl=0
     //% weight=90
-    //% blockGap=4
+    //% blockGap=16
     export function showCGRAMCharacter(slot: number): void {
         sendData(slot);
         basic.pause(1);
+    }
+
+    //% blockId=grove_lcd_16x2_show_cgram_character_inline
+    //% block="char $slot"
+    //% group="Custom characters"
+    //% slot.min=0 slot.max=255 slot.defl=0
+    //% weight=85
+    //% blockGap=16
+    export function showCGRAMCharacterInline(slot: number): string {
+        return String.fromCharCode(slot);
     }
 
     /**
@@ -154,7 +164,7 @@ namespace gTecGroveLcd16x2 {
     //% inlineInputMode=external
     //% group="Custom characters"
     //% weight=80
-    //% blockGap=4
+    //% blockGap=16
     export function saveCharacterToCGRAM(slot: number, pattern: Image): void {
         let charBytes: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -190,7 +200,7 @@ namespace gTecGroveLcd16x2 {
     //% shim=images::createImage
     //% group="Custom characters"
     //% weight=70
-    //% blockGap=4
+    //% blockGap=16
     export function characterMatrix(img: string): Image {
         return <Image><any>img;
     }
