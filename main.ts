@@ -70,6 +70,10 @@ namespace gTecGroveLcd16x2 {
     //% weight=80
     //% blockGap=4
     export function showString(message: string): void {
+        if (message.includes("\\[")) {
+            message = parseForEscapedText(message);
+        }
+        
         for (let i = 0; i < message.length; i++) {
             sendData(message.charCodeAt(i));
             basic.pause(1);
@@ -82,7 +86,12 @@ namespace gTecGroveLcd16x2 {
     //% weight=70
     //% blockGap=4
     export function showNumber(value: number): void {
-        showString(value.toString());
+        let message = value.toString();
+
+        for (let i = 0; i < message.length; i++) {
+            sendData(message.charCodeAt(i));
+            basic.pause(1);
+        }
     }
 
     //% blockId=grove_lcd_16x2_move_cursor
@@ -117,7 +126,7 @@ namespace gTecGroveLcd16x2 {
     //% block="return cursor to home"
     //% group="Basic blocks"
     //% weight=40
-    //% blockGap=8
+    //% blockGap=4
     export function home(): void {
         sendCommand(ReturnHome);
         basic.pause(2);
@@ -125,25 +134,28 @@ namespace gTecGroveLcd16x2 {
 
     // Custom character blocks
 
-    //% blockId=grove_lcd_16x2_show_custom_character
-    //% block="show custom character $slot"
+    //% blockId=grove_lcd_16x2_show_cgram_character
+    //% block="show character $slot"
     //% group="Custom characters"
+    //% slot.min=0 slot.max=255 slot.defl=0
     //% weight=90
-    //% blockGap=8
-    export function showCustomCharacter(slot: number): void {
-        showString(String.fromCharCode(slot));
+    //% blockGap=4
+    export function showCGRAMCharacter(slot: number): void {
+        sendData(slot);
+        basic.pause(1);
     }
 
     /**
     */
-    //& blockId="set_slot"
-    //% block="Create character in slot $slot| $pattern"
-    //% pattern.shadow="create_character"
+    //& blockId="grove_lcd_16x2_save_character_to_cgram"
+    //% block="Save character to memory slot $slot| $pattern"
+    //% slot.min=0 slot.max=7 slot.defl=0
+    //% pattern.shadow="grove_lcd_16x2_5x8_matrix"
     //% inlineInputMode=external
     //% group="Custom characters"
     //% weight=80
-    //% blockGap=8
-    export function foo(slot: number, pattern: Image): void {
+    //% blockGap=4
+    export function saveCharacterToCGRAM(slot: number, pattern: Image): void {
         let charBytes: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
 
         // Build the bytes for each row, based on pixels being on or off
@@ -170,7 +182,7 @@ namespace gTecGroveLcd16x2 {
 
     /**
     */
-    //% blockId="create_character"
+    //% blockId="grove_lcd_16x2_5x8_matrix"
     //% block="character data"
     //% imageLiteral=1
     //% imageLiteralColumns=5
@@ -178,8 +190,8 @@ namespace gTecGroveLcd16x2 {
     //% shim=images::createImage
     //% group="Custom characters"
     //% weight=70
-    //% blockGap=8
-    export function bar(img: string): Image {
+    //% blockGap=4
+    export function characterMatrix(img: string): Image {
         return <Image><any>img;
     }
 
@@ -303,6 +315,80 @@ namespace gTecGroveLcd16x2 {
         buffer[1] = data;
 
         pins.i2cWriteBuffer(lcdI2cAddress, buffer, false);
+    }
+ 
+    // String parsing function. Parses a string and replaces escape sequences
+    // (for example \[15] or \[0x3F]) with their corresponding character codes (0-255).
+    function parseForEscapedText(text: string): string {
+        let result = "";
+        let i = 0;
+
+        while (i < text.length) {
+            // Check if there is enough text left for the escape sequence to be complete
+            // Then look for the start pattern: \[
+            if (i + 3 < text.length && text.substr(i,2) == "\\[") {
+                let stringInBrackets = "";
+                let lookAheadPointer = i + 2;
+                let foundClosingBracket = false;
+
+                // Gather all characters inside the brackets
+                while (lookAheadPointer < text.length) {
+                    if (text.charAt(lookAheadPointer) == "]") {
+                        foundClosingBracket = true;
+                        break;
+                    }
+                    stringInBrackets += text.charAt(lookAheadPointer);
+                    lookAheadPointer++;
+                }
+
+                // Process the gathered content if brackets closed successfully
+                if (foundClosingBracket && stringInBrackets.length > 0) {
+                    let finalCode = -1;
+
+                    // Detect if it is a Hexadecimal sequence
+                    if (stringInBrackets.length >= 3 && stringInBrackets.substr(0,2).toLowerCase() == "0x") {
+                        let hexPart = stringInBrackets.substr(2);
+
+                        // Simple hex validation (allow only 0-9, a-f, A-F)
+                        let isHex = true;
+                        for (let h = 0; h < hexPart.length; h++) {
+                            if (!"0123456789abcdef".includes(hexPart.charAt(h).toLowerCase())) {
+                                isHex = false;
+                                break;
+                            }
+                        }
+                        if (isHex && hexPart.length > 0) {
+                            finalCode = parseInt(hexPart, 16);
+                        }
+                    }
+                    // Process as standard Decimal sequence
+                    else {
+                        let isDecimal = true;
+                        for (let d = 0; d < stringInBrackets.length; d++) {
+                            if (!"0123456789".includes(stringInBrackets.charAt(d))) {
+                                isDecimal = false;
+                                break;
+                            }
+                        }
+                        if (isDecimal) {
+                            finalCode = parseInt(stringInBrackets, 10);
+                        }
+                    }
+
+                    // If a valid number between 0-255 was parsed, insert character
+                    if (finalCode >= 0 && finalCode <= 255) {
+                        result += String.fromCharCode(finalCode);
+                        i = lookAheadPointer + 1; // Advance main pointer past ']'
+                        continue;
+                    }
+                }
+            }
+
+            // Fallback: keep current character if no valid pattern matched
+            result += text.charAt(i);
+            i++;
+        }
+        return result;
     }
 
     // Testing area
